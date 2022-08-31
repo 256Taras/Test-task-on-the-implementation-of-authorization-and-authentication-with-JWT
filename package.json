@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node --experimental-fetch dist/index.js",
+    "start": "node dist/index.js",
     "server": "nodemon --exec sucrase-node src/index.ts ",
     "start:dev": "yarn docker:down && yarn docker:up && yarn server",
     "docker:up": "docker-compose up -d",
