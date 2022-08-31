@@ -29,4 +29,4 @@ Token should have expiration time 10 mins and extend it on any user request (exc
 Questions to the recruiter about the assignment:
     developer: It is not clear here that - when the token expires, it needs to be expanded, but mostly in such cases there is an optional "/refresh" endpoint, but the task did not mention it
     Recruiter: If it has ended, it cannot be expanded. If you did, then there will only be a plus/
-```# Test-task-on-the-implementation-of-authorization-and-authentication-with-JWT
+```
