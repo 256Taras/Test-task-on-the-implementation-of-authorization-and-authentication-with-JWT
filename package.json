@@ -1,0 +1,41 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --experimental-fetch dist/index.js",
+    "server": "nodemon --exec sucrase-node src/index.ts ",
+    "start:dev": "yarn docker:down && yarn docker:up && yarn server",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:destroy": "docker-compose down --volumes --remove-orphans",
+    "migrate:up": "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/auth?schema=public node-pg-migrate -m ./infra/migrations up",
+    "migrate:down": "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/auth?schema=public node-pg-migrate -m ./infra/migrations down",
+    "migrate:redo": "DATABASE_URL=postgresql://postgres:postgres@localhost:5433/auth?schema=public node-pg-migrate -m ./infra/migrations redo",
+    "migrate:create": "node-pg-migrate -m ./infra/migrations create",
+    "prettier": "prettier 'src/**/*.{js,ts,md,json}'",
+    "prettier:fix": "prettier --write 'src/**/*.{js,ts,md,json}'"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.1.0",
+    "@fastify/jwt": "^6.3.2",
+    "dotenv": "^16.0.1",
+    "fastify": "^4.5.2",
+    "jsonwebtoken": "^8.5.1",
+    "node-pg-migrate": "^6.2.2",
+    "nodemon": "^2.0.19",
+    "pg": "^8.8.0",
+    "pino-pretty": "^9.1.0",
+    "undici": "^5.10.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.9",
+    "@types/node": "^18.7.13",
+    "@types/pg": "^8.6.5",
+    "@types/pino": "^7.0.5",
+    "prettier": "^2.7.1",
+    "sucrase": "^3.25.0",
+    "typescript": "*"
+  }
+}
