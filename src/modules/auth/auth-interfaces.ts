@@ -18,8 +18,7 @@ export interface IJwtAccessTokenPayloadDto {
   readonly refreshTokenId: string;
 }
 
-export interface IJwtRefreshTokenPayloadDto
-  extends IJwtAccessTokenPayloadDto {
+export interface IJwtRefreshTokenPayloadDto extends IJwtAccessTokenPayloadDto {
   readonly ppid: string;
 }
 

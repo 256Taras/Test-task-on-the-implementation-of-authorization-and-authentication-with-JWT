@@ -1,16 +1,12 @@
 import { queryRunner } from '../../common/infra/db';
 import { lookup } from '../../common/utils/common';
-import { tables } from '../../configs/tables';
+import { tables } from '../../configs';
 
 import { IUserRefreshTokensDto } from './user-refresh-tokens-interfaces';
 import { UserRefreshTokensMapper } from './user-refresh-tokens-mapper';
 
 export class UserRefreshTokensRepository {
-  public create({
-    id,
-    ppid,
-    userId,
-  }: IUserRefreshTokensDto): Promise<IUserRefreshTokensDto> {
+  public create({ id, ppid, userId }: IUserRefreshTokensDto): Promise<IUserRefreshTokensDto> {
     return queryRunner({
       query: `
             INSERT INTO "${tables.userRefreshToken}" 
@@ -37,9 +33,7 @@ export class UserRefreshTokensRepository {
     }).then(lookup);
   }
 
-  public deleteByUserId(
-    userId: string,
-  ): Promise<IUserRefreshTokensDto> {
+  public deleteByUserId(userId: string): Promise<IUserRefreshTokensDto> {
     return queryRunner({
       query: `
             DELETE FROM "${tables.userRefreshToken}" 
@@ -52,7 +46,7 @@ export class UserRefreshTokensRepository {
     }).then(lookup);
   }
 
-  getById(refreshTokenId: string) {
+  public getById = (refreshTokenId: string) => {
     return queryRunner({
       query: `
             SELECT *
@@ -63,5 +57,5 @@ export class UserRefreshTokensRepository {
       resultMapper: UserRefreshTokensMapper.toDto,
       enableLog: true,
     }).then(lookup);
-  }
+  };
 }

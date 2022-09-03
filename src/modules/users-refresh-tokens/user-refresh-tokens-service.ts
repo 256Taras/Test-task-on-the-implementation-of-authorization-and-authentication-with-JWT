@@ -14,13 +14,9 @@ export class UserRefreshTokensService {
     private readonly _hashService: HashService,
   ) {}
 
-  public generateAndCreateOne = async (
-    userId: string,
-  ): Promise<IUserRefreshTokensDto> => {
+  public generateAndCreateOne = async (userId: string): Promise<IUserRefreshTokensDto> => {
     const refreshIdentifier = randomBytes(16).toString('hex');
-    const refreshHash = await this._hashService.getHash(
-      refreshIdentifier,
-    );
+    const refreshHash = await this._hashService.getHash(refreshIdentifier);
     return await this._userRefreshTokensRepository.create({
       id: randomUUID(),
       userId,
@@ -28,12 +24,8 @@ export class UserRefreshTokensService {
     });
   };
 
-  public deleteOneOrAll = async (
-    id: string,
-    userId: string | null,
-  ): Promise<ISuccess> => {
-    const tokenEntity =
-      await this._userRefreshTokensRepository.getById(id);
+  public deleteOneOrAll = async (id: string, userId: string | null): Promise<ISuccess> => {
+    const tokenEntity = await this._userRefreshTokensRepository.getById(id);
     if (!tokenEntity) throw new ForbiddenException('Unauthorized');
     userId
       ? await this._userRefreshTokensRepository.deleteByUserId(userId)
@@ -41,9 +33,7 @@ export class UserRefreshTokensService {
     return SUCCESS;
   };
 
-  public getById(
-    refreshTokenId: string,
-  ): Promise<IUserRefreshTokensDto> {
+  public getById(refreshTokenId: string): Promise<IUserRefreshTokensDto> {
     return this._userRefreshTokensRepository.getById(refreshTokenId);
   }
 }

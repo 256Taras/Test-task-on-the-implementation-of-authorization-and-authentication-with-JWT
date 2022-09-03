@@ -1,19 +1,14 @@
 import { queryRunner } from '../../common/infra/db';
 import { lookup } from '../../common/utils/common';
-import { tables } from '../../configs/tables';
+import { tables } from '../../configs';
+import { mapDbError, UniqueViolationException } from '../../common/errors/db';
+import { ResourceAlreadyExistException } from '../../common/errors/common';
 
 import { UsersMapper } from './users-mapper';
 import { IUsersDto } from './users-interfaces';
-import {
-  mapDbError,
-  UniqueViolationException,
-} from '../../common/errors/db';
-import { ResourceAlreadyExistException } from '../../common/errors/common';
 
 export class UsersRepository {
-  public getByIdType = (
-    idType: string,
-  ): Promise<IUsersDto | null> => {
+  public getByIdType = (idType: string): Promise<IUsersDto | null> => {
     return queryRunner({
       query: `
                     SELECT id, id_type, password
@@ -39,11 +34,7 @@ export class UsersRepository {
     }).then(lookup);
   };
 
-  public createOne = ({
-    id,
-    idType,
-    password,
-  }: IUsersDto): Promise<IUsersDto> => {
+  public createOne = ({ id, idType, password }: IUsersDto): Promise<IUsersDto> => {
     return queryRunner({
       query: `
                     INSERT INTO "${tables.user}" (id, id_type, password)

@@ -1,15 +1,16 @@
 import 'dotenv/config';
 import { fastify } from 'fastify';
-import pino from 'pino';
 import fastifyCors from '@fastify/cors';
 import fastifyJwt, { FastifyJWTOptions } from '@fastify/jwt';
+import { fastifyRequestContextPlugin } from '@fastify/request-context';
+import pino from 'pino';
 
-import { fastifyConfig } from './configs/fastify';
-import { loggerConfig } from './configs/logger';
-import { jwtConfig } from './configs/jwt';
-
+import { corsConfig, jwtConfig, loggerConfig, fastifyConfig } from './configs';
 import { AuthenticatorService } from './common/infra/auth/authenticator-service';
 import { app as appV1Plugin } from './common/api/rest-api/v1/app';
+import { container } from './common/infra/container';
+import { TOKENS } from './types';
+import { APP_TOKENS } from './configs/constants';
 
 class RestServer {
   private readonly _fastify = fastify({
@@ -17,55 +18,47 @@ class RestServer {
     logger: pino(loggerConfig),
   });
 
+  /**
+   * @private
+   */
+  #plugins(): void {
+    const jwtRefreshSetting = {
+      secret: jwtConfig.refreshTokenSecret,
+      namespace: 'refresh',
+      verify: { extractToken: AuthenticatorService.getInstance.extractRefreshToken },
+    } as FastifyJWTOptions;
+    void this._fastify.register(fastifyCors, corsConfig);
+    void this._fastify.register(fastifyJwt, {
+      secret: jwtConfig.accessTokenSecret,
+      namespace: 'access',
+    });
+    void this._fastify.register(fastifyJwt, jwtRefreshSetting);
+    void this._fastify.decorate('verifyJwtAccessToken', AuthenticatorService.getInstance.verifyJwtAccessToken);
+    void this._fastify.decorate('verifyJwtRefreshToken', AuthenticatorService.getInstance.verifyJwtRefreshToken);
+    void this._fastify.register(fastifyRequestContextPlugin);
+    void this._fastify.register(appV1Plugin, { prefix: 'v1/' });
+  }
+  /**
+   * @private
+   */
+  #runAls(): void {
+    const als = container.get(TOKENS.asyncLocalStorage);
+    const store = new Map();
+    store?.set(APP_TOKENS.logger, this._fastify.log);
+    als.enterWith(store);
+  }
+
   async start(): Promise<void> {
     try {
-      void this._fastify.register(fastifyCors, {
-        origin: '*',
-        methods: 'GET, POST, PUT, PATCH, POST, DELETE, OPTIONS',
-        allowedHeaders:
-          'Origin, Content-Type, X-Requested-With, Authorization, Accept, append, delete, entries, foreach, get, has, keys, set, values, *',
-        preflightContinue: true,
-        optionsSuccessStatus: 204,
+      this.#runAls();
+      this.#plugins();
+      void this._fastify.listen({ port: 8000, host: '0.0.0.0' }, (err, address) => {
+        if (err) {
+          this._fastify.log.error(err);
+          process.exit(1);
+        }
       });
-      this._fastify.log.info(jwtConfig);
-      void this._fastify.register(fastifyJwt, {
-        secret: jwtConfig.accessTokenSecret,
-        namespace: 'access',
-        // jwtVerify: 'verifyJwtAccessToken'
-      });
-      void this._fastify.register(fastifyJwt, {
-        secret: jwtConfig.refreshTokenSecret,
-        // jwtVerify: 'verifyJwtRefreshToken',
-
-        namespace: 'refresh',
-        verify: {
-          extractToken:
-            AuthenticatorService.getInstance.extractRefreshToken,
-        },
-      } as FastifyJWTOptions);
-
-      void this._fastify.decorate(
-        'verifyJwtAccessToken',
-        AuthenticatorService.getInstance.verifyJwtAccessToken,
-      );
-      void this._fastify.decorate(
-        'verifyJwtRefreshToken',
-        AuthenticatorService.getInstance.verifyJwtRefreshToken,
-      );
-
-      void this._fastify.register(appV1Plugin, { prefix: 'v1/' });
-
-      void this._fastify.listen(
-        { port: 8000, host: '0.0.0.0' },
-        (err, address) => {
-          if (err) {
-            this._fastify.log.error(err);
-            process.exit(1);
-          }
-        },
-      );
     } catch (err) {
-      console.log(err);
       this._fastify.log.error(err);
       process.exit(1);
     }

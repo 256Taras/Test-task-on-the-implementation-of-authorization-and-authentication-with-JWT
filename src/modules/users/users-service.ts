@@ -6,14 +6,9 @@ import { IUsersDto } from './users-interfaces';
 import { ISignUpDto } from '../auth/auth-interfaces';
 
 export class UsersService {
-  public constructor(
-    private readonly _usersRepository: UsersRepository,
-  ) {}
+  public constructor(private readonly _usersRepository: UsersRepository) {}
 
-  public createOne = ({
-    idType,
-    password,
-  }: ISignUpDto): Promise<IUsersDto> => {
+  public createOne = ({ idType, password }: ISignUpDto): Promise<IUsersDto> => {
     return this._usersRepository.createOne({
       id: randomUUID(),
       idType,
@@ -32,12 +27,10 @@ export class UsersService {
   public latency = async (): Promise<string> => {
     let result: string = '';
     const start = new Date();
-
     await request('https://google.com').finally(() => {
       // @ts-ignore
       result = new Date() - start + 'ms';
     });
-
     return result;
   };
 }

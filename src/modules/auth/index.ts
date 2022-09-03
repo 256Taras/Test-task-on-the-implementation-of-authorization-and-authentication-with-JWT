@@ -1,22 +1,16 @@
-import { UserRefreshTokensRepository } from '../users/user-refresh-tokens-repository';
-import { UserRefreshTokensService } from '../users/user-refresh-tokens-service';
-import { UsersRepository } from '../users/users-repository';
-import { UsersService } from '../users/users-service';
-import { AuthController } from './auth-controller';
-import { AuthService } from './auth-service';
-import { HashService } from './hash-service';
+import { injected } from 'brandi';
 
-export const AuthModule = new AuthController(
-  new AuthService(
-    new UsersService(new UsersRepository()),
-    new HashService(),
-    new UserRefreshTokensService(
-      new UserRefreshTokensRepository(),
-      new HashService(),
-    ),
-  ),
-  new UserRefreshTokensService(
-    new UserRefreshTokensRepository(),
-    new HashService(),
-  ),
-);
+import { container } from '../../common/infra/container';
+import { TOKENS } from '../../types';
+
+import { AuthService } from './auth-service';
+import { AuthController } from './auth-controller';
+import { UserRefreshTokensService } from '../users-refresh-tokens/user-refresh-tokens-service';
+import { UsersService } from '../users/users-service';
+
+injected(UsersService, TOKENS.userRepository);
+injected(AuthService, TOKENS.userService, TOKENS.hashService, TOKENS.userRefreshTokenService);
+injected(UserRefreshTokensService, TOKENS.userRefreshTokenRepository, TOKENS.hashService);
+injected(AuthController, TOKENS.autService, TOKENS.userRefreshTokenService, TOKENS.userContextService, TOKENS.loggerService);
+
+export const authModule = container.get(TOKENS.authController);

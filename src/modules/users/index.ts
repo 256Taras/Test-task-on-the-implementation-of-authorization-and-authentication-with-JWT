@@ -1,7 +1,12 @@
+import { injected } from 'brandi';
+
+import { container } from '../../common/infra/container';
+import { TOKENS } from '../../types';
+
 import { UsersController } from './users-controller';
-import { UsersRepository } from './users-repository';
 import { UsersService } from './users-service';
 
-export const UsersModule = new UsersController(
-  new UsersService(new UsersRepository()),
-);
+injected(UsersService, TOKENS.userRepository);
+injected(UsersController, TOKENS.userService, TOKENS.userContextService, TOKENS.loggerService);
+
+export const userModule = container.get(TOKENS.userController);
